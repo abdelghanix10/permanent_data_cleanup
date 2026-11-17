@@ -1,0 +1,2 @@
+id,name,model_id,group_id/id,operation,domain
+access_permanent_data_cleanup_wizard,permanent.data.cleanup.wizard,permanent.data.cleanup.wizard,permanent_data_cleanup.group_permanent_delete_manager,crud,

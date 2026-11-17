@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. Centralized Permanent Data Cleanup Wizard Form -->
+    <record id="view_permanent_data_cleanup_wizard_form" model="ir.ui.view">
+        <field name="name">permanent.data.cleanup.wizard.form</field>
+        <field name="model">permanent.data.cleanup.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Permanent Data Cleanup &amp; Reset">
+                <sheet>
+                    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3" role="alert">
+                        <i class="oi fs-3" data-icon="warning"/>
+                        <div>
+                            <strong>Warning — Irreversible Action:</strong>
+                            Selected records (and their dependent lines, moves, and journal entries) will be permanently deleted from the database.
+                        </div>
+                    </div>
+
+                    <group string="1. Filter Scope">
+                        <group>
+                            <field name="filter_mode" widget="radio"/>
+                            <field name="pos_config_id" options="{'no_create': True}"/>
+                        </group>
+                        <group invisible="filter_mode != 'date_range'">
+                            <field name="date_from" required="filter_mode == 'date_range'"/>
+                            <field name="date_to" required="filter_mode == 'date_range'"/>
+                        </group>
+                    </group>
+
+                    <div class="mb-2">
+                        <button name="action_select_all"
+                                string="Select All Categories"
+                                type="object"
+                                class="btn btn-sm btn-outline-secondary"/>
+                    </div>
+
+                    <group string="2. Select Data to Permanently Delete">
+                        <group string="Point of Sale">
+                            <field name="delete_pos_sessions"/>
+                            <field name="delete_pos_orders"/>
+                            <field name="delete_pos_payments"/>
+                        </group>
+                        <group string="Manufacturing &amp; Inventory">
+                            <field name="delete_mrp_productions"/>
+                            <field name="delete_stock_moves"/>
+                            <field name="reset_stock_quants"/>
+                            <field name="reset_sequences"/>
+                        </group>
+                    </group>
+
+                    <group string="3. Live Impact Preview">
+                        <group>
+                            <field name="preview_sessions_count"/>
+                            <field name="preview_orders_count"/>
+                            <field name="preview_payments_count"/>
+                        </group>
+                        <group>
+                            <field name="preview_mrp_count"/>
+                            <field name="preview_moves_count"/>
+                            <field name="preview_quants_count"/>
+                        </group>
+                    </group>
+
+                    <group string="4. Security Confirmation">
+                        <field name="confirm_text" placeholder="Type DELETE here to unlock..."/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_execute_cleanup"
+                            string="Delete Permanently"
+                            type="object"
+                            class="btn-danger"
+                            confirm="Are you sure? This will permanently erase the selected records from the database."/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Wizard Window Action -->
+    <record id="action_permanent_data_cleanup_wizard" model="ir.actions.act_window">
+        <field name="name">Permanent Data Cleanup</field>
+        <field name="res_model">permanent.data.cleanup.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="groups_id" eval="[Command.link(ref('permanent_data_cleanup.group_permanent_delete_manager'))]"/>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_permanent_data_cleanup_root"
+              name="Data Cleanup"
+              action="action_permanent_data_cleanup_wizard"
+              sequence="99"
+              groups="permanent_data_cleanup.group_permanent_delete_manager"/>
+
+    <!-- 2. Contextual "Delete Permanently (Force)" Server Actions in List/Form Views -->
+    <record id="action_server_force_delete_pos_order" model="ir.actions.server">
+        <field name="name">Delete Permanently (Force)</field>
+        <field name="model_id" ref="point_of_sale.model_pos_order"/>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_order"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="groups_id" eval="[Command.link(ref('permanent_data_cleanup.group_permanent_delete_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_force_delete_permanently()</field>
+    </record>
+
+    <record id="action_server_force_delete_pos_session" model="ir.actions.server">
+        <field name="name">Delete Permanently (Force)</field>
+        <field name="model_id" ref="point_of_sale.model_pos_session"/>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_session"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="groups_id" eval="[Command.link(ref('permanent_data_cleanup.group_permanent_delete_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_force_delete_permanently()</field>
+    </record>
+
+    <record id="action_server_force_delete_pos_payment" model="ir.actions.server">
+        <field name="name">Delete Permanently (Force)</field>
+        <field name="model_id" ref="point_of_sale.model_pos_payment"/>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_payment"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="groups_id" eval="[Command.link(ref('permanent_data_cleanup.group_permanent_delete_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_force_delete_permanently()</field>
+    </record>
+
+    <record id="action_server_force_delete_mrp_production" model="ir.actions.server">
+        <field name="name">Delete Permanently (Force)</field>
+        <field name="model_id" ref="mrp.model_mrp_production"/>
+        <field name="binding_model_id" ref="mrp.model_mrp_production"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="groups_id" eval="[Command.link(ref('permanent_data_cleanup.group_permanent_delete_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_force_delete_permanently()</field>
+    </record>
+
+    <record id="action_server_force_delete_stock_picking" model="ir.actions.server">
+        <field name="name">Delete Permanently (Force)</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="groups_id" eval="[Command.link(ref('permanent_data_cleanup.group_permanent_delete_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_force_delete_permanently()</field>
+    </record>
+
+    <record id="action_server_force_delete_stock_move" model="ir.actions.server">
+        <field name="name">Delete Permanently (Force)</field>
+        <field name="model_id" ref="stock.model_stock_move"/>
+        <field name="binding_model_id" ref="stock.model_stock_move"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="groups_id" eval="[Command.link(ref('permanent_data_cleanup.group_permanent_delete_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_force_delete_permanently()</field>
+    </record>
+</odoo>
